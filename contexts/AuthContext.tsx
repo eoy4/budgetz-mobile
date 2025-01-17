@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log('auth state changed', user);
       setUser(user);
       persistUser(user);
     });

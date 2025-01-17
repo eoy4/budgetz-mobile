@@ -14,7 +14,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemedText } from "@/components/ThemedText";
 import { onAuthStateChanged, User } from "@firebase/auth";
-import { auth } from '@/config/firebase';
+import { auth } from "@/config/firebase";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -27,22 +27,15 @@ function RootLayoutNav() {
     return null;
   }
 
-  console.log('user', !!user);
+  console.log("user", !!user);
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      {!!user ? (
-        // Authenticated stack
-        <Stack key="auth-stack">
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-      ) : (
-        // Non-authenticated stack
-        <Stack key="non-auth-stack">
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-        </Stack>
-      )}
+      <Stack key={!!user ? "auth-stack" : "non-auth-stack"}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+      </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
@@ -53,6 +46,10 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
+  const [user, setUser] = useState<User | null>(null);
+  const [uniqueKey1, setUniqueKey1] = useState<string>("");
+  const [uniqueKey2, setUniqueKey2] = useState<string>("");
+
   useEffect(() => {
     if (loaded) {
       SplashScreen.hideAsync();
@@ -62,26 +59,27 @@ export default function RootLayout() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       setUser(user);
+      setUniqueKeys();
     });
   }, []);
 
-  const [user, setUser] = useState<User | null>(null);
-  const [uniqueKey1, setUniqueKey1] = useState<string>('');
-  const [uniqueKey2, setUniqueKey2] = useState<string>('');
-
-  useEffect(() => {
-    console.log('setting unique keys');
-    setUniqueKey1(Math.random().toString());
-    setUniqueKey2(Math.random().toString());
-  }, [user]);
+  const setUniqueKeys = () => {
+    console.log("setting unique keys");
+    const uniqueKey1 = Math.random().toString();
+    const uniqueKey2 = Math.random().toString();
+    setUniqueKey1(uniqueKey1);
+    setUniqueKey2(uniqueKey2);
+    console.log("uniqueKey1", uniqueKey1);
+    console.log("uniqueKey2", uniqueKey2);
+  };
 
   if (!loaded) {
     return null;
   }
 
   return (
-    <AuthProvider key="asdsa">
-      <RootLayoutNav />
+    <AuthProvider key={"auth-key" + (user ? uniqueKey1 : uniqueKey2)}>
+      <RootLayoutNav key={"root-key" + (user ? uniqueKey1 : uniqueKey2)} />
     </AuthProvider>
   );
 }

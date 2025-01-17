@@ -1,5 +1,6 @@
 import { Image, StyleSheet, Platform } from 'react-native';
 import { Button } from 'react-native';
+import { useRouter, Redirect } from 'expo-router';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
@@ -8,11 +9,18 @@ import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function HomeScreen() {
-  const { signOut } = useAuth();
+  const { user, signOut } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return <Redirect href="/login" />;
+  }
 
   const handleLogout = async () => {
     try {
       await signOut();
+      router.replace('/login');
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -28,7 +36,7 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Welcome {user.email}!</ThemedText>
         <HelloWave />
       </ThemedView>
       

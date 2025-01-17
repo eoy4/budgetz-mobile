@@ -9,14 +9,20 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn } = useAuth();
 
   const handleLogin = async () => {
+    if (isSubmitting) return;
+    
     try {
+      setIsSubmitting(true);
       setError('');
       await signIn(email, password);
     } catch (err: any) {
       setError(err.message || 'Failed to sign in');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -33,6 +39,7 @@ export default function LoginScreen() {
         onChangeText={setEmail}
         autoCapitalize="none"
         keyboardType="email-address"
+        onSubmitEditing={handleLogin}
       />
       
       <TextInput
@@ -41,9 +48,14 @@ export default function LoginScreen() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        onSubmitEditing={handleLogin}
       />
       
-      <Button title="Sign In" onPress={handleLogin} />
+      <Button 
+        title={isSubmitting ? "Signing in..." : "Sign In"} 
+        onPress={handleLogin}
+        disabled={isSubmitting}
+      />
     </ThemedView>
   );
 }
